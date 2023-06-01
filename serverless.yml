@@ -11,6 +11,7 @@ provider:
           Resource: arn:aws:dynamodb:us-east-1:471893938953:table/usersTable
 
 plugins:
+  - serverless-better-credentials
   - serverless-plugin-typescript
   - serverless-dynamodb-local
   - serverless-offline
@@ -61,25 +62,3 @@ resources:
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
-
-    S3Bucket:
-      Type: "AWS::S3::Bucket"
-      Properties:
-        AccessControl: PublicRead
-        BucketName: bucket-crud-serverless-users
-    SampleBucketPolicy:
-      Type: AWS::S3::BucketPolicy
-      Properties:
-        Bucket: !Ref S3Bucket
-        PolicyDocument:
-          Version: "2012-10-17"
-          Statement:
-            - Action:
-                - "s3:GetObject"
-              Effect: Allow
-              Resource: !Join
-                - ""
-                - - "arn:aws:s3:::"
-                  - !Ref S3Bucket
-                  - /*
-              Principal: "*"
