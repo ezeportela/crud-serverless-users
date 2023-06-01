@@ -8,7 +8,7 @@ provider:
       statements:
         - Effect: Allow
           Action: "dynamodb:*"
-          Resource: arn:aws:dynamodb:us-east-1:471893938953:table/usersTable
+          Resource: arn:aws:dynamodb:us-east-1:620097380428:table/usersTable
 
 plugins:
   - serverless-better-credentials
@@ -20,6 +20,7 @@ package:
   individually: true
   patterns:
     - "!*/**"
+    - pkg/*.js
 
 custom:
   dynamodb:
@@ -47,6 +48,16 @@ functions:
               paths:
                 id: true
 
+  create-user:
+    handler: lambdas/create-user/handler.createUser
+    package:
+      patterns:
+        - "lambdas/create-user/handler.js"
+    events:
+      - http:
+          path: users
+          method: POST
+
 resources:
   Resources:
     usersTable:
@@ -54,10 +65,10 @@ resources:
       Properties:
         TableName: usersTable
         AttributeDefinitions:
-          - AttributeName: username
+          - AttributeName: userId
             AttributeType: S
         KeySchema:
-          - AttributeName: username
+          - AttributeName: userId
             KeyType: HASH
         ProvisionedThroughput:
           ReadCapacityUnits: 1

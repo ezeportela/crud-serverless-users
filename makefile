@@ -7,6 +7,9 @@ dynamo-install:
 dynamo-start:
 	sls dynamodb start
 
+dynamo-migrate:
+	npm run dynamodb:migrate
+
 dev:
 	npm run dev
 
