@@ -1,0 +1,85 @@
+service: crud-serverless-users
+
+provider:
+  name: aws
+  runtime: nodejs16.x
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action: "dynamodb:*"
+          Resource: arn:aws:dynamodb:us-east-1:471893938953:table/usersTable
+
+plugins:
+  - serverless-plugin-typescript
+  - serverless-dynamodb-local
+  - serverless-offline
+
+package:
+  individually: true
+  patterns:
+    - "!*/**"
+
+custom:
+  dynamodb:
+    stages:
+      - dev
+    start:
+      port: 8000
+      inMemory: true
+      migrate: true
+    # Uncomment only if you already have a DynamoDB running locally
+    # noStart: true
+
+functions:
+  get-users:
+    handler: lambdas/get-users/handler.getUsers
+    package:
+      patterns:
+        - "lambdas/get-users/handler.js"
+    events:
+      - http:
+          path: users/{id}
+          method: GET
+          request:
+            parameters:
+              paths:
+                id: true
+
+resources:
+  Resources:
+    usersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: usersTable
+        AttributeDefinitions:
+          - AttributeName: username
+            AttributeType: S
+        KeySchema:
+          - AttributeName: username
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+
+    S3Bucket:
+      Type: "AWS::S3::Bucket"
+      Properties:
+        AccessControl: PublicRead
+        BucketName: bucket-crud-serverless-users
+    SampleBucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        Bucket: !Ref S3Bucket
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Action:
+                - "s3:GetObject"
+              Effect: Allow
+              Resource: !Join
+                - ""
+                - - "arn:aws:s3:::"
+                  - !Ref S3Bucket
+                  - /*
+              Principal: "*"
